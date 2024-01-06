@@ -44,6 +44,8 @@ namespace Automatic9045.AtsEx.VehicleStructure
         public override void Dispose()
         {
             BveHacker.ScenarioCreated -= OnScenarioCreated;
+
+            DrawObjectsPatch.Dispose();
         }
 
         private void OnScenarioCreated(ScenarioCreatedEventArgs e)
