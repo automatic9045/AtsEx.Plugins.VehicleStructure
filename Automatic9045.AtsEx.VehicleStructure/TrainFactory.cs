@@ -36,13 +36,9 @@ namespace Automatic9045.AtsEx.VehicleStructure
             return train;
         }
 
-        public Train Create(Data.VehicleTrain data, string baseDirectory)
+        public Train Create(Data.Structure[] data, string baseDirectory)
         {
-            if (data.StructureGroups.Length == 0) throw new ArgumentException("ストラクチャーグループが定義されていません。");
-
-            Data.StructureGroup structureGroup = data.StructureGroups[0];
-
-            List<Structure> structures = structureGroup.Structures
+            List<Structure> structures = data
                 .AsParallel()
                 .Select(x =>
                 {

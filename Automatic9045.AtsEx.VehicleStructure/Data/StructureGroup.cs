@@ -10,6 +10,9 @@ namespace Automatic9045.AtsEx.VehicleStructure.Data
     [XmlRoot]
     public class StructureGroup
     {
+        [XmlAttribute]
+        public bool Vibrate = false;
+
         public Structure[] Structures = new Structure[0];
     }
 }

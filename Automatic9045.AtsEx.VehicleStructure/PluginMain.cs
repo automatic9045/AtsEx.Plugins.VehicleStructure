@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using BveTypes.ClassWrappers;
 using ObjectiveHarmonyPatch;
+using SlimDX;
 
 using AtsEx.PluginHost;
 using AtsEx.PluginHost.Plugins;
@@ -22,7 +23,9 @@ namespace Automatic9045.AtsEx.VehicleStructure
 
         private readonly Data.Config Config;
         private readonly HarmonyPatch DrawObjectsPatch;
+
         private VehicleStructure VehicleStructure;
+        private bool Vibrate;
 
         public PluginMain(PluginBuilder builder) : base(builder)
         {
@@ -35,8 +38,22 @@ namespace Automatic9045.AtsEx.VehicleStructure
             DrawObjectsPatch = HarmonyPatch.Patch(nameof(BveHacker), drawObjectsMethod.Source, PatchType.Postfix);
             DrawObjectsPatch.Invoked += (sender, e) =>
             {
+                Vehicle vehicle = BveHacker.Scenario.Vehicle;
+                Matrix view;
+                if (Vibrate)
+                {
+                    view =
+                        vehicle.VibrationManager.Positioner.BlockToCarCenterTransform.Matrix
+                        * vehicle.VibrationManager.CarBodyTransform.Matrix
+                        * vehicle.CameraLocation.TransformFromCameraHomePosition;
+                }
+                else
+                {
+                    view = vehicle.CameraLocation.TransformFromBlock;
+                }
+
                 double vehicleLocation = BveHacker.Scenario.LocationManager.Location;
-                VehicleStructure.DrawTrains(vehicleLocation, BveHacker.Scenario.Vehicle.CameraLocation.TransformFromBlock);
+                VehicleStructure.DrawTrains(vehicleLocation, view);
                 return PatchInvokationResult.DoNothing(e);
             };
         }
@@ -51,8 +68,13 @@ namespace Automatic9045.AtsEx.VehicleStructure
         private void OnScenarioCreated(ScenarioCreatedEventArgs e)
         {
             TrainFactory trainFactory = new TrainFactory(e.Scenario.TimeManager, e.Scenario.LocationManager, e.Scenario.Route, e.Scenario.ObjectDrawer.DrawDistanceManager);
-            Train train = trainFactory.Create(Config.VehicleTrain, BaseDirectory);
+
+            if (Config.VehicleTrain.StructureGroups.Length == 0) throw new ArgumentException("ストラクチャーグループが定義されていません。");
+
+            Data.StructureGroup structureGroup = Config.VehicleTrain.StructureGroups[0];
+            Train train = trainFactory.Create(structureGroup.Structures, BaseDirectory);
             VehicleStructure = new VehicleStructure(Direct3DProvider.Instance, train);
+            Vibrate = structureGroup.Vibrate;
         }
 
         public override TickResult Tick(TimeSpan elapsed)
