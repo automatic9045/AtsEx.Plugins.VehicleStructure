@@ -24,8 +24,7 @@ namespace Automatic9045.AtsEx.VehicleStructure
         private readonly Data.Config Config;
         private readonly HarmonyPatch DrawObjectsPatch;
 
-        private VehicleStructure VehicleStructure;
-        private bool Vibrate;
+        private List<VehicleStructure> VehicleStructures;
 
         public PluginMain(PluginBuilder builder) : base(builder)
         {
@@ -38,22 +37,25 @@ namespace Automatic9045.AtsEx.VehicleStructure
             DrawObjectsPatch = HarmonyPatch.Patch(nameof(BveHacker), drawObjectsMethod.Source, PatchType.Postfix);
             DrawObjectsPatch.Invoked += (sender, e) =>
             {
+                UserVehicleLocationManager locationManager = BveHacker.Scenario.LocationManager;
                 Vehicle vehicle = BveHacker.Scenario.Vehicle;
-                Matrix view;
-                if (Vibrate)
+                MyTrack myTrack = BveHacker.Scenario.Route.MyTrack;
+
+                double vehicleLocation = locationManager.Location;
+
+                Matrix transform = vehicle.CameraLocation.TransformFromBlock;
+                Matrix vibratedTransform =
+                    vehicle.VibrationManager.Positioner.BlockToCarCenterTransform.Matrix
+                    * vehicle.VibrationManager.CarBodyTransform.Matrix
+                    * vehicle.CameraLocation.TransformFromCameraHomePosition;
+
+                Matrix vibration = Matrix.Invert(transform) * vibratedTransform;
+
+                foreach (VehicleStructure info in VehicleStructures)
                 {
-                    view =
-                        vehicle.VibrationManager.Positioner.BlockToCarCenterTransform.Matrix
-                        * vehicle.VibrationManager.CarBodyTransform.Matrix
-                        * vehicle.CameraLocation.TransformFromCameraHomePosition;
-                }
-                else
-                {
-                    view = vehicle.CameraLocation.TransformFromBlock;
+                    info.DrawTrains(vehicleLocation, transform, vibration);
                 }
 
-                double vehicleLocation = BveHacker.Scenario.LocationManager.Location;
-                VehicleStructure.DrawTrains(vehicleLocation, view);
                 return PatchInvokationResult.DoNothing(e);
             };
         }
@@ -68,18 +70,36 @@ namespace Automatic9045.AtsEx.VehicleStructure
         private void OnScenarioCreated(ScenarioCreatedEventArgs e)
         {
             TrainFactory trainFactory = new TrainFactory(e.Scenario.TimeManager, e.Scenario.LocationManager, e.Scenario.Route, e.Scenario.ObjectDrawer.DrawDistanceManager);
+            MatrixCalculator matrixCalculator = new MatrixCalculator(e.Scenario.Route);
 
-            if (Config.VehicleTrain.StructureGroups.Length == 0) throw new ArgumentException("ストラクチャーグループが定義されていません。");
-
-            Data.StructureGroup structureGroup = Config.VehicleTrain.StructureGroups[0];
-            Train train = trainFactory.Create(structureGroup.Structures, BaseDirectory);
-            VehicleStructure = new VehicleStructure(Direct3DProvider.Instance, train);
-            Vibrate = structureGroup.Vibrate;
+            VehicleStructures = Config.VehicleTrain.StructureGroups
+                .AsParallel()
+                .Select(group =>
+                {
+                    Train train = trainFactory.Create(group.Structures, BaseDirectory);
+                    VehicleStructure result = new VehicleStructure(Direct3DProvider.Instance, train, matrixCalculator, group.Vibrate);
+                    return result;
+                })
+                .ToList();
         }
 
         public override TickResult Tick(TimeSpan elapsed)
         {
             return new VehiclePluginTickResult();
+        }
+
+
+        private class MatrixCalculator : IMatrixCalculator
+        {
+            private readonly Route Route;
+
+            public MatrixCalculator(Route route)
+            {
+                Route = route;
+            }
+
+            public Matrix GetTrackMatrix(LocatableMapObject mapObject, double to, double from)
+                => Route.GetTrackMatrix(mapObject, to, from);
         }
     }
 }

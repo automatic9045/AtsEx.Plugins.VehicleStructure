@@ -80,6 +80,7 @@
     <Compile Include="Data\Config.cs" />
     <Compile Include="Data\Structure.cs" />
     <Compile Include="Data\StructureGroup.cs" />
+    <Compile Include="IMatrixCalculator.cs" />
     <Compile Include="PluginMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TrainFactory.cs" />
