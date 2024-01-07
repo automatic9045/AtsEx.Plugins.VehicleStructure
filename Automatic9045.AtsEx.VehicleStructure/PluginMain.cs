@@ -44,12 +44,11 @@ namespace Automatic9045.AtsEx.VehicleStructure
                 double vehicleLocation = locationManager.Location;
 
                 Matrix transform = vehicle.CameraLocation.TransformFromBlock;
-                Matrix vibratedTransform =
-                    vehicle.VibrationManager.Positioner.BlockToCarCenterTransform.Matrix
-                    * vehicle.VibrationManager.CarBodyTransform.Matrix
-                    * vehicle.CameraLocation.TransformFromCameraHomePosition;
-
-                Matrix vibration = Matrix.Invert(transform) * vibratedTransform;
+                Matrix vibration =
+                    vehicle.CameraLocation.TransformFromCameraHomePosition
+                    * Matrix.Invert(vehicle.CameraLocation.TransformFromBlock)
+                    * vehicle.VibrationManager.Positioner.BlockToCarCenterTransform.Matrix
+                    * vehicle.VibrationManager.CarBodyTransform.Matrix;
 
                 foreach (VehicleStructure info in VehicleStructures)
                 {
