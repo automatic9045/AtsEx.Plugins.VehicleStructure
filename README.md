@@ -1,6 +1,8 @@
 # AtsEx.Plugins.VehicleStructure
 【BVE/AtsEX】自列車のストラクチャーを描画するプラグインです。
 
+詳しくは [AtsEX 公式ホームページ](https://automatic9045.github.io/AtsEX.Docs.Plugins/vehicle-structure/) をご覧ください。
+
 ## 使用ライブラリ等
 ### [AtsEx.PluginHost](https://github.com/automatic9045/AtsEX) (MIT) およびそれが参照するライブラリ
 Copyright (c) 2022 automatic9045
