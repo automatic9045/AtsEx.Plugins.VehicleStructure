@@ -45,10 +45,9 @@ namespace Automatic9045.AtsEx.VehicleStructure
 
                 Matrix transform = vehicle.CameraLocation.TransformFromBlock;
                 Matrix vibration =
-                    vehicle.CameraLocation.TransformFromCameraHomePosition
-                    * Matrix.Invert(vehicle.CameraLocation.TransformFromBlock)
-                    * vehicle.VibrationManager.Positioner.BlockToCarCenterTransform.Matrix
-                    * vehicle.VibrationManager.CarBodyTransform.Matrix;
+                    vehicle.VibrationManager.CarBodyTransform.Matrix
+                    * vehicle.VibrationManager.ViewPoint.GetTranslation()
+                    * Matrix.Translation(0, 0, (float)vehicle.VibrationManager.Positioner.HalfOfCarLength);
 
                 foreach (VehicleStructure info in VehicleStructures)
                 {

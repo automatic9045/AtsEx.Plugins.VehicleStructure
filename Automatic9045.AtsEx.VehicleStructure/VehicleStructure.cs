@@ -39,6 +39,10 @@ namespace Automatic9045.AtsEx.VehicleStructure
         {
             Train.Location = vehicleLocation;
 
+            int vehicleBlockLocation = (int)vehicleLocation / 25 * 25;
+            Matrix firstCarTrackMatrix = default;
+            Matrix tiltMatrix = default;
+
             for (int i = 0; i < Train.TrainInfo.Structures.Count; i++)
             {
                 Structure car = Train.TrainInfo.Structures[i];
@@ -48,8 +52,31 @@ namespace Automatic9045.AtsEx.VehicleStructure
                 carVibrationMatrix.M42 *= VibrationCoefficients[i];
                 carVibrationMatrix.M43 *= VibrationCoefficients[i];
 
-                Matrix trackMatrix = MatrixCalculator.GetTrackMatrix(car, vehicleLocation + car.Location, (int)vehicleLocation / 25 * 25);
-                Matrix transform = (Vibrate ? carVibrationMatrix : Matrix.Identity) * trackMatrix * viewMatrix;
+                double location = vehicleLocation + car.Location;
+                Matrix trackMatrix = MatrixCalculator.GetTrackMatrix(car, location, vehicleBlockLocation);
+                if (i == 0 && Vibrate)
+                {
+                    firstCarTrackMatrix = trackMatrix;
+
+                    bool tiltsAlongCant = car.TiltsAlongCant;
+                    bool tiltsAlongGradient = car.TiltsAlongGradient;
+
+                    car.TiltsAlongCant = false;
+                    car.TiltsAlongGradient = false;
+
+                    Matrix trackMatrixWithoutTilt = MatrixCalculator.GetTrackMatrix(car, location, vehicleBlockLocation);
+
+                    car.TiltsAlongCant = tiltsAlongCant;
+                    car.TiltsAlongGradient = tiltsAlongGradient;
+
+                    tiltMatrix = Matrix.Invert(trackMatrixWithoutTilt * car.Matrix) * trackMatrix * car.Matrix;
+                }
+
+                Matrix diff = Matrix.Invert(firstCarTrackMatrix) * trackMatrix; // TODO: 正確な式に差し替える
+
+                Matrix transform = (Vibrate ? carVibrationMatrix : Matrix.Identity) * trackMatrix
+                    * Matrix.Invert(diff) * tiltMatrix * diff
+                    * viewMatrix;
                 Direct3DProvider.Device.SetTransform(TransformState.World, transform);
 
                 car.Model.Draw(Direct3DProvider, false);

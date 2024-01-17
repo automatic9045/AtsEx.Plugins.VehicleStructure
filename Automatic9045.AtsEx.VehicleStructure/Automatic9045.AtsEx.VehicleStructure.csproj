@@ -83,6 +83,7 @@
     <Compile Include="IMatrixCalculator.cs" />
     <Compile Include="PluginMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SixDofExtensions.cs" />
     <Compile Include="TrainFactory.cs" />
     <Compile Include="Data\VehicleTrain.cs" />
     <Compile Include="VehicleStructure.cs" />
