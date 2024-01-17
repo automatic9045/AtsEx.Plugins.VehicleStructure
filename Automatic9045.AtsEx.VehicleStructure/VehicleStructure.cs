@@ -74,9 +74,9 @@ namespace Automatic9045.AtsEx.VehicleStructure
 
                 Matrix diff = Matrix.Invert(firstCarTrackMatrix) * trackMatrix; // TODO: 正確な式に差し替える
 
-                Matrix transform = (Vibrate ? carVibrationMatrix : Matrix.Identity) * trackMatrix
-                    * Matrix.Invert(diff) * tiltMatrix * diff
-                    * viewMatrix;
+                Matrix transform = Vibrate
+                    ? carVibrationMatrix * trackMatrix * Matrix.Invert(diff) * tiltMatrix * diff * viewMatrix
+                    : trackMatrix * viewMatrix;
                 Direct3DProvider.Device.SetTransform(TransformState.World, transform);
 
                 car.Model.Draw(Direct3DProvider, false);
