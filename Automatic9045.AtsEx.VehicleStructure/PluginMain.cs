@@ -43,15 +43,15 @@ namespace Automatic9045.AtsEx.VehicleStructure
 
                 double vehicleLocation = locationManager.Location;
 
-                Matrix transform = vehicle.CameraLocation.TransformFromBlock;
-                Matrix vibration =
-                    vehicle.VibrationManager.CarBodyTransform.Matrix
-                    * vehicle.VibrationManager.ViewPoint.GetTranslation()
-                    * Matrix.Translation(0, 0, (float)vehicle.VibrationManager.Positioner.HalfOfCarLength);
+                Matrix blockToCamera = vehicle.CameraLocation.TransformFromBlock;
+                Matrix blockToVehicle =
+                    vehicle.VibrationManager.Positioner.BlockToCarCenterTransform.Matrix
+                    * vehicle.VibrationManager.CarBodyTransform.Matrix
+                    * vehicle.VibrationManager.ViewPoint.GetTranslation();
 
                 foreach (VehicleStructure info in VehicleStructures)
                 {
-                    info.DrawTrains(vehicleLocation, transform, vibration);
+                    info.DrawTrains(vehicleLocation, Matrix.Invert(blockToVehicle), blockToCamera);
                 }
 
                 return PatchInvokationResult.DoNothing(e);
