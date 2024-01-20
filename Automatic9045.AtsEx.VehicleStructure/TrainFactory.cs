@@ -39,7 +39,6 @@ namespace Automatic9045.AtsEx.VehicleStructure
         public Train Create(Data.Structure[] data, string baseDirectory)
         {
             List<Structure> structures = data
-                .AsParallel()
                 .Select(x =>
                 {
                     string modelPath = Path.Combine(baseDirectory, x.Model);

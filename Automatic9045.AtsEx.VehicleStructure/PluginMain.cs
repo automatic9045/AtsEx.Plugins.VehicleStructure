@@ -71,7 +71,6 @@ namespace Automatic9045.AtsEx.VehicleStructure
             MatrixCalculator matrixCalculator = new MatrixCalculator(e.Scenario.Route);
 
             VehicleStructures = Config.VehicleTrain.StructureGroups
-                .AsParallel()
                 .Select(group =>
                 {
                     Train train = trainFactory.Create(group.Structures, BaseDirectory);
