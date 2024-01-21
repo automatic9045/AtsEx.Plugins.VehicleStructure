@@ -17,15 +17,17 @@ namespace Automatic9045.AtsEx.VehicleStructure
         private readonly Train Train;
         private readonly IMatrixCalculator MatrixCalculator;
         private readonly bool Vibrate;
+        private readonly Matrix FirstCarOriginToFront;
 
         private readonly List<float> VibrationCoefficients = new List<float>();
 
-        public VehicleStructure(Direct3DProvider direct3DProvider, Train train, IMatrixCalculator matrixCalculator, bool vibrate)
+        public VehicleStructure(Direct3DProvider direct3DProvider, Train train, IMatrixCalculator matrixCalculator, bool vibrate, Matrix firstCarOriginToFront)
         {
             Direct3DProvider = direct3DProvider;
             Train = train;
             MatrixCalculator = matrixCalculator;
             Vibrate = vibrate;
+            FirstCarOriginToFront = firstCarOriginToFront;
 
             Random Random = new Random();
             for (int i = 0; i < Train.TrainInfo.Structures.Count; i++)
@@ -50,11 +52,12 @@ namespace Automatic9045.AtsEx.VehicleStructure
                 Matrix carToBlock = MatrixCalculator.GetTrackMatrix(car, location, vehicleBlockLocation);
                 if (i == 0)
                 {
-                    Matrix firstCarToBlock = carToBlock;
-                    Matrix blockToFirstCar = Matrix.Invert(firstCarToBlock);
-                    Matrix vehicleToFirstCar = vehicleToBlock * blockToFirstCar;
+                    Matrix firstCarOriginToBlock = carToBlock;
+                    Matrix blockToFirstCarOrigin = Matrix.Invert(firstCarOriginToBlock);
+                    Matrix blockToFirstCarFront = blockToFirstCarOrigin * FirstCarOriginToFront;
+                    Matrix vehicleFrontToFirstCarFront = vehicleToBlock * blockToFirstCarFront;
 
-                    vibration = vehicleToFirstCar;
+                    vibration = vehicleFrontToFirstCarFront;
                     vibration.M41 *= VibrationCoefficients[i];
                     vibration.M42 *= VibrationCoefficients[i];
                     vibration.M43 *= VibrationCoefficients[i];

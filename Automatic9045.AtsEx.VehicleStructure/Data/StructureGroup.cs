@@ -13,6 +13,9 @@ namespace Automatic9045.AtsEx.VehicleStructure.Data
         [XmlAttribute]
         public bool Vibrate = false;
 
+        [XmlAttribute]
+        public double FirstStructureFront = 0;
+
         public Structure[] Structures = new Structure[0];
     }
 }

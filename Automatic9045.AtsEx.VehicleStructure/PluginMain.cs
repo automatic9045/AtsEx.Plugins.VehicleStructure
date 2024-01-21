@@ -49,9 +49,9 @@ namespace Automatic9045.AtsEx.VehicleStructure
                     * vehicle.VibrationManager.CarBodyTransform.Matrix
                     * vehicle.VibrationManager.ViewPoint.GetTranslation();
 
-                foreach (VehicleStructure info in VehicleStructures)
+                foreach (VehicleStructure vehicleStructure in VehicleStructures)
                 {
-                    info.DrawTrains(vehicleLocation, Matrix.Invert(blockToVehicle), blockToCamera);
+                    vehicleStructure.DrawTrains(vehicleLocation, Matrix.Invert(blockToVehicle), blockToCamera);
                 }
 
                 return PatchInvokationResult.DoNothing(e);
@@ -74,7 +74,9 @@ namespace Automatic9045.AtsEx.VehicleStructure
                 .Select(group =>
                 {
                     Train train = trainFactory.Create(group.Structures, BaseDirectory);
-                    VehicleStructure result = new VehicleStructure(Direct3DProvider.Instance, train, matrixCalculator, group.Vibrate);
+                    Matrix firstCarOriginToFront = Matrix.Translation(0, 0, (float)group.FirstStructureFront);
+
+                    VehicleStructure result = new VehicleStructure(Direct3DProvider.Instance, train, matrixCalculator, group.Vibrate, firstCarOriginToFront);
                     return result;
                 })
                 .ToList();
